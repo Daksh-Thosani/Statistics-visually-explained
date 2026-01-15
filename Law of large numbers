@@ -1,0 +1,18 @@
+n <- 200                   # number of coin flips
+
+set.seed(123)              # for reproducibility
+# Simulate fair coin flips: 1 = Head, 0 = Tail
+coin_flips <- rbinom(n, size = 1, prob = 0.5)
+
+# Running proportion of heads
+prop_heads <- cumsum(coin_flips)/seq_len(n)
+
+plot(prop_heads,
+  type = "l", col = "blue", lwd = 2,
+  ylim = c(0, 1),
+  xlab = "Number of flips",
+  ylab = "Proportion of heads",
+  main = "Law of Large Numbers with Coin Flips")
+
+# True probability line (0.5)
+abline(h = 0.5, lty = 2, col = "red")
