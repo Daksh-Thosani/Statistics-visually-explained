@@ -1,0 +1,59 @@
+# --------------------------------------------------
+# Episode 3: Homoscedasticity vs Heteroscedasticity
+# Series: Statistics, visually explained
+# --------------------------------------------------
+
+set.seed(123)
+
+# -----------------------------
+# 1. Generate predictor
+# -----------------------------
+n <- 200
+x <- runif(n, 0, 10)
+
+# -----------------------------
+# 2. Homoscedastic data
+# -----------------------------
+# Constant variance of errors
+error_homo <- rnorm(n, mean = 0, sd = 1)
+y_homo <- 2 + 0.8 * x + error_homo
+
+model_homo <- lm(y_homo ~ x)
+
+# -----------------------------
+# 3. Heteroscedastic data
+# -----------------------------
+# Increasing variance of errors
+error_hetero <- rnorm(n, mean = 0, sd = 0.3 * x)
+y_hetero <- 2 + 0.8 * x + error_hetero
+
+model_hetero <- lm(y_hetero ~ x)
+
+# -----------------------------
+# 4. Residuals vs Fitted plots
+# -----------------------------
+par(mfrow = c(1, 2))
+
+# Homoscedasticity plot
+plot(
+  fitted(model_homo),
+  resid(model_homo),
+  main = "Homoscedasticity",
+  xlab = "Fitted values",
+  ylab = "Residuals",
+  pch = 16
+)
+abline(h = 0, lty = 2, col = "red")
+
+# Heteroscedasticity plot
+plot(
+  fitted(model_hetero),
+  resid(model_hetero),
+  main = "Heteroscedasticity",
+  xlab = "Fitted values",
+  ylab = "Residuals",
+  pch = 16
+)
+abline(h = 0, lty = 2, col = "red")
+
+par(mfrow = c(1, 1))
