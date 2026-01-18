@@ -1,0 +1,109 @@
+# --------------------------------------------------
+# Episode 5: Normal Approximation fails in the tails
+# Series: Statistics, visually explained
+# --------------------------------------------------
+
+set.seed(123)
+
+# -----------------------------
+# 1. Binomial setup
+# -----------------------------
+n <- 50
+p <- 0.1
+
+mu <- n * p
+sigma <- sqrt(n * p * (1 - p))
+
+# -----------------------------
+# 2. Generate exact binomial samples
+# -----------------------------
+# Large sample to approximate exact distribution
+samples <- rbinom(100000, size = n, prob = p)
+
+# -----------------------------
+# 3. Histogram vs Normal curve
+# -----------------------------
+
+hist(
+  samples,
+  breaks = seq(-0.5, 16.5, by = 1),
+  probability = TRUE,
+  col = "lightgray",
+  border = "white",
+  xlim = c(0, 17),
+  xlab = "Number of successes",
+  ylab = "Probability",
+  main = "Exact Binomial vs Normal Approximation"
+)
+
+# Overlay normal density
+x_vals <- seq(0, 16, length.out = 400)
+lines(
+  x_vals,
+  dnorm(x_vals, mean = mu, sd = sigma),
+  col = "red",
+  lwd = 2
+)
+
+legend(
+  "topright",
+  legend = c("Exact Binomial (Histogram)", "Normal Approximation"),
+  col = c("gray", "red"),
+  lwd = 2,
+  bty = "n"
+)
+
+# -----------------------------
+# 4. Tail probability comparison
+# -----------------------------
+k <- 10  # right-tail threshold
+
+exact_tail <- mean(samples >= k)
+normal_tail <- 1 - pnorm(k - 0.5, mu, sigma)
+
+cat("Right tail probability P(X >= ", k, ")\n", sep = "")
+cat("Exact binomial      :", exact_tail, "\n")
+cat("Normal approximation:", normal_tail, "\n")
+
+# --------------------------------------------------
+# 5. Zoomed-in upper tail comparison
+# --------------------------------------------------
+
+tail_start <- 7
+tail_end <- 15
+
+# Exact probabilities (from histogram)
+tail_bins <- tail_start:tail_end
+exact_tail_prob <- dbinom(tail_bins, size = n, prob = p)
+
+# Normal approximation with continuity correction
+normal_tail_prob <- pnorm(tail_bins + 0.5, mu, sigma) -
+  pnorm(tail_bins - 0.5, mu, sigma)
+
+plot(
+  tail_bins,
+  exact_tail_prob,
+  type = "h",
+  lwd = 3,
+  col = "black",
+  xlab = "Number of successes",
+  ylab = "Probability",
+  main = "Upper Tail: Exact vs Normal Approximation",
+  ylim = c(0, max(exact_tail_prob))
+)
+
+points(
+  tail_bins,
+  normal_tail_prob,
+  col = "red",
+  pch = 20
+)
+
+legend(
+  "topright",
+  legend = c("Exact Binomial", "Normal Approximation"),
+  col = c("black", "red"),
+  lwd = c(3, NA),
+  pch = c(NA, 20),
+  bty = "n"
+)
