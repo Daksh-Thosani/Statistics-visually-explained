@@ -1,0 +1,92 @@
+# --------------------------------------------------
+# Confidence Intervals: What they really mean
+# Series: Statistics, visually explained
+# --------------------------------------------------
+
+set.seed(123)
+
+# -----------------------------
+# 1. True population parameters
+# -----------------------------
+true_mu <- 50
+true_sigma <- 10
+
+# -----------------------------
+# 2. Simulation settings
+# -----------------------------
+n <- 30                 # sample size
+num_samples <- 100      # number of repeated samples
+alpha <- 0.05           # 95% confidence interval
+
+# -----------------------------
+# 3. Generate confidence intervals
+# -----------------------------
+lower <- numeric(num_samples)
+upper <- numeric(num_samples)
+sample_means <- numeric(num_samples)
+
+for (i in 1:num_samples) {
+  sample_data <- rnorm(n, mean = true_mu, sd = true_sigma)
+  
+  xbar <- mean(sample_data)
+  s <- sd(sample_data)
+  
+  t_crit <- qt(1 - alpha/2, df = n - 1)
+  
+  margin <- t_crit * (s / sqrt(n))
+  
+  lower[i] <- xbar - margin
+  upper[i] <- xbar + margin
+  sample_means[i] <- xbar
+}
+
+# Check which intervals contain the true mean
+contains_mu <- (lower <= true_mu) & (upper >= true_mu)
+
+# -----------------------------
+# 4. Plot confidence intervals
+# -----------------------------
+plot(
+  NA,
+  xlim = range(lower, upper),
+  ylim = c(1, num_samples),
+  xlab = "Confidence Interval",
+  ylab = "Sample Number",
+  main = "95% Confidence Intervals Across Repeated Samples"
+)
+
+# Draw each confidence interval
+for (i in 1:num_samples) {
+  col_line <- ifelse(contains_mu[i], "black", "red")
+  
+  segments(
+    x0 = lower[i],
+    y0 = i,
+    x1 = upper[i],
+    y1 = i,
+    col = col_line,
+    lwd = 2
+  )
+}
+
+# True mean line
+abline(v = true_mu, col = "blue", lwd = 2, lty = 2)
+
+# Add legend
+legend(
+  "top right",
+  legend = c("Contains true mean", "Misses true mean", "True mean"),
+  col = c("black", "red", "blue"),
+  lwd = 2,
+  lty = c(1, 1, 2),
+  bty = "n"
+)
+
+# -----------------------------
+# 5. Print coverage result
+# -----------------------------
+coverage_rate <- mean(contains_mu)
+
+cat("Coverage rate:", coverage_rate, "\n")
+cat("Intervals missing true mean:", sum(!contains_mu), "out of", num_samples, "\n")
+
