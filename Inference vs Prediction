@@ -1,0 +1,115 @@
+# --------------------------------------------------
+# Inference vs Prediction (Regression)
+# Series: Statistics, visually explained
+# --------------------------------------------------
+
+set.seed(123)
+
+# -----------------------------
+# 1. Generate data
+# -----------------------------
+n_train <- 40
+n_test <- 200
+
+x_train <- runif(n_train, -3, 3)
+x_test <- runif(n_test, -3, 3)
+
+# True relationship (non-linear, but not too complex)
+true_function <- function(x) {
+  2 + 1.5*x - 0.7*(x^2)
+}
+
+# Add noise
+y_train <- true_function(x_train) + rnorm(n_train, sd = 2)
+y_test <- true_function(x_test) + rnorm(n_test, sd = 2)
+
+train_data <- data.frame(x = x_train, y = y_train)
+test_data <- data.frame(x = x_test, y = y_test)
+
+# -----------------------------
+# 2. Fit models
+# -----------------------------
+# Simple linear model (interpretable)
+model_simple <- lm(y ~ x, data = train_data)
+
+# Complex polynomial model (high flexibility)
+model_complex <- lm(y ~ poly(x, 8), data = train_data)
+
+# -----------------------------
+# 3. Predictions
+# -----------------------------
+pred_train_simple <- predict(model_simple, newdata = train_data)
+pred_train_complex <- predict(model_complex, newdata = train_data)
+
+pred_test_simple <- predict(model_simple, newdata = test_data)
+pred_test_complex <- predict(model_complex, newdata = test_data)
+
+# -----------------------------
+# 4. Compute MSE (Training vs Test)
+# -----------------------------
+mse <- function(actual, predicted) mean((actual - predicted)^2)
+
+train_mse_simple <- mse(train_data$y, pred_train_simple)
+train_mse_complex <- mse(train_data$y, pred_train_complex)
+
+test_mse_simple <- mse(test_data$y, pred_test_simple)
+test_mse_complex <- mse(test_data$y, pred_test_complex)
+
+cat("Training MSE:\n")
+cat("Simple model :", train_mse_simple, "\n")
+cat("Complex model:", train_mse_complex, "\n\n")
+
+cat("Test MSE:\n")
+cat("Simple model :", test_mse_simple, "\n")
+cat("Complex model:", test_mse_complex, "\n\n")
+
+# -----------------------------
+# 5. Plot 1: Model fit comparison
+# -----------------------------
+plot(
+  train_data$x, train_data$y,
+  pch = 16,
+  main = "Inference vs Prediction: Simple vs Complex Model",
+  xlab = "x",
+  ylab = "y"
+)
+
+# Grid for smooth curves
+x_grid <- seq(-3, 3, length.out = 300)
+grid_data <- data.frame(x = x_grid)
+
+# True curve
+lines(x_grid, true_function(x_grid), col = "black", lwd = 2, lty = 2)
+
+# Simple model line
+lines(x_grid, predict(model_simple, newdata = grid_data), col = "blue", lwd = 2)
+
+# Complex model curve
+lines(x_grid, predict(model_complex, newdata = grid_data), col = "red", lwd = 2)
+
+legend(
+  "topleft",
+  legend = c("True function", "Simple model (Inference)", "Complex model (Prediction-fit)"),
+  col = c("black", "blue", "red"),
+  lwd = 2,
+  lty = c(2, 1, 1),
+  bty = "n"
+)
+
+# -----------------------------
+# 6. Plot 2: Training vs Test Error
+# -----------------------------
+mse_table <- data.frame(
+  Model = c("Simple", "Complex"),
+  Training_MSE = c(train_mse_simple, train_mse_complex),
+  Test_MSE = c(test_mse_simple, test_mse_complex)
+)
+
+barplot(
+  height = as.matrix(mse_table[, c("Training_MSE", "Test_MSE")]),
+  beside = TRUE,
+  names.arg = mse_table$Model,
+  main = "Training vs Test Error",
+  ylab = "Mean Squared Error",
+  legend.text = c("Training", "Test")
+)
